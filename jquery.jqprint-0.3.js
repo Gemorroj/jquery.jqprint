@@ -1,5 +1,5 @@
-﻿﻿// -----------------------------------------------------------------------
-// Eros Fratini - eros@recoding.it
+﻿// -----------------------------------------------------------------------
+// eros@recoding.it
 // jqprint 0.3
 //
 // - 19/06/2009 - some new implementations, added Opera support
@@ -7,21 +7,19 @@
 //
 // Printing plug-in for jQuery, evolution of jPrintArea: http://plugins.jquery.com/project/jPrintArea
 // requires jQuery 1.3.x
-//
-// Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
 //------------------------------------------------------------------------
 jQuery.fn.jqprint = function (options) {
     var opt = $.extend({}, {
-        debug: false,
-        importCSS: true,
-        printContainer: true,
-        operaSupport: true
+        debug: false, // show the iframe for debugging
+        importCSS: true, // import page CSS
+        printContainer: true // grab outer container as well as the contents of the selector
     }, options);
 
     var $element = (this instanceof jQuery) ? this : $(this);
-    var doc;
+    var isOpera = window.opera !== undefined;
+    var doc, content;
 
-    if (opt.operaSupport && $.browser.opera) {
+    if (isOpera) {
         var tab = window.open("", "jqPrint-preview");
         tab.document.open();
 
@@ -30,24 +28,29 @@ jQuery.fn.jqprint = function (options) {
         var $iframe = $("<iframe />");
 
         if (!opt.debug) {
-            $iframe.css({position: "absolute", width: "0px", height: "0px", left: "-600px", top: "-600px"});
+            $iframe.css({
+                position: "absolute",
+                width: "0px",
+                height: "0px",
+                left: "-600px",
+                top: "-600px"
+            });
         }
 
-        $iframe.appendTo("body");
-        doc = $iframe[0].contentWindow.document;
+        $iframe.appendTo(document.body);
+        content = $iframe[0].contentWindow;
+        doc = content.document;
     }
 
     if (opt.importCSS) {
-        var $linkPrint = $("link[media='print']");
-        if ($linkPrint.length > 0)  {
-            $linkPrint.each(function () {
-                doc.write("<link type='text/css' rel='stylesheet' href='" + $(this).attr("href") + "' media='print' />");
-            });
-        } else {
-            $("link").each(function () {
-                doc.write("<link type='text/css' rel='stylesheet' href='" + $(this).attr("href") + "' />");
-            });
-        }
+        $("link[rel='stylesheet']").each(function () {
+            var $this = $(this);
+            var href = $this.attr('href');
+            if (href) {
+                var media = $this.attr('media') || 'all';
+                doc.write("<link type='text/css' rel='stylesheet' href='" + href + "' media='" + media + "' />");
+            }
+        });
     }
 
     if (opt.printContainer) {
@@ -61,9 +64,9 @@ jQuery.fn.jqprint = function (options) {
 
     doc.close();
 
-    (opt.operaSupport && $.browser.opera ? tab : $iframe[0].contentWindow).focus();
+    (isOpera ? tab : content).focus();
     setTimeout(function () {
-        (opt.operaSupport && $.browser.opera ? tab : $iframe[0].contentWindow).print();
+        (isOpera ? tab : content).print();
         if (tab) {
             tab.close();
         }
