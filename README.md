@@ -8,8 +8,8 @@ Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.p
 Example:
 ```js
 $("#selector").jqprint({
-      debug: false, //show the iframe for debugging
-      importCSS: true, // import page CSS
-      printContainer: true // grab outer container as well as the contents of the selector
-  });
+    debug: false, //show the iframe for debugging
+    importCSS: true, // import page CSS
+    printContainer: true // grab outer container as well as the contents of the selector
+});
 ```
